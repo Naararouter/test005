@@ -13,6 +13,7 @@ body {
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
+    font-family: sans-serif;
 }
 
 #root {
@@ -79,6 +80,16 @@ body {
     min-height: 30px;
     background-color: rgba(0,0,0,0.2);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.note-header svg {
+    width: 26px;
+    height: 26px;
+    fill: #fff;
+    padding-right: 5px;
 }
 
 .note-text {
@@ -89,6 +100,57 @@ body {
     padding: 5px;
 }
 
+.note-color {
+    background-color: #0000;
+    border: none;
+    padding-left: 5px;
+    width: 23px;
+}
+
+.note-color:focus {
+    outline: none;
+}
+
 .note-text:focus {
     outline: none;
+}
+
+#loader {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #0003;
+    z-index: 9999;
+    transition: opacity 200ms linear;
+    pointer-events: none;
+    opacity: 0;
+}
+
+#loader.enable {
+    pointer-events: all;
+    opacity: 1;
+}
+
+#notify {
+    position: fixed;
+    padding: 15px 10px;
+    background-color: white;
+    transition: all 200ms linear;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: 5px;
+    color: #848484;
+    font-weight: 100;
+    font-size: 14px;
+    top: 0px;
+    left: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.16);
+}
+
+#notify.enable {
+    pointer-events: all;
+    opacity: 1;
+    top: 10px;
 }

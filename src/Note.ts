@@ -1,6 +1,7 @@
-import { ROOT_NODE, MS_FPS_60 } from "./consts.js";
+import { ROOT_NODE, MS_FPS_60, DEFAULT_COLOR } from "./consts.js";
 import { throttle } from "./tools/throttle.js";
 import { store } from "./Store.js";
+import { bringToFrontIconLayout } from "./icons/bringToFront.js";
 
 export interface INoteStore {
     id: string;
@@ -9,6 +10,8 @@ export interface INoteStore {
         height?: string;
     }
     value: string;
+    color: string;
+    zIndex: string;
 }
 
 export interface INoteParamsBase extends INoteStore {
@@ -28,6 +31,7 @@ export class Note {
     private wrapNode: HTMLSpanElement | null = null;
     private headerNode: HTMLDivElement | null = null;
     private textAreaNode: HTMLTextAreaElement | null = null;
+    private colorInputNode: HTMLInputElement | null = null;
 
     private bodyListener: (() => void) | null = null;
 
@@ -81,34 +85,71 @@ export class Note {
         }
     }
 
-    private createNodes({ x = 0, y = 0, value, textAreaStyles }: INoteParams) {
+    private createNodes({ x = 0, y = 0, value, textAreaStyles, color, zIndex }: INoteParams) {
         const wrap = document.createElement('span');
         wrap.classList.add('note');
         let transform = 'translate(';
         transform += x > 0 ? `${x}px` : '0px';
         transform += y > 0 ? `, ${y}px)` : ', 0px)';
+        // as I found, in the modern browser we won't call an unnecessary layout trashing until
+        // node wasn't placed in real DOM like in 110 line;
         wrap.style.transform = transform;
+        if (color) wrap.style.backgroundColor = color;
+        if (zIndex) wrap.style.zIndex = zIndex;
 
         const noteHeader = document.createElement('div');
         noteHeader.classList.add('note-header');
         this.headerNode = noteHeader;
 
-        const textarea = document.createElement('textarea');
-        textarea.classList.add('note-text');
-        if (value) textarea.value = value;
-        if (textAreaStyles?.width && textAreaStyles.height) {
-            // as I found, in the modern browser we won't call an unnecessary layout trashing until
-            // node wasn't placed in real DOM like in 110 line;
-            textarea.style.width = textAreaStyles.width;
-            textarea.style.height = textAreaStyles.height;
-        }
-        this.textAreaNode = textarea;
+        const colorInput = this.createColorInput(color);
+        const textarea = this.createTextArea(value, textAreaStyles);
+        const bringToFrontIcon = this.creatBringToFrontIcon();
 
+        noteHeader.appendChild(colorInput);
+        noteHeader.appendChild(bringToFrontIcon);
         wrap.appendChild(noteHeader);
         wrap.appendChild(textarea);
 
         ROOT_NODE.appendChild(wrap);
         this.wrapNode = wrap;
+    }
+
+    private creatBringToFrontIcon() {
+        const container = document.createElement('div');
+        container.insertAdjacentHTML('afterbegin', bringToFrontIconLayout);
+        const svg = container.children[0] as HTMLElement;
+        svg.onclick = () => {
+            const wrap = this.wrapNode;
+            if (wrap && (!wrap.style.zIndex || +wrap.style.zIndex < store.frontCounter)) {
+                store.incFrontCounter();
+                wrap.style.zIndex = `${store.frontCounter}`;
+            }
+        }
+        return svg;
+    }
+
+    private createColorInput(color: string | undefined) {
+        const colorInput = document.createElement('input');
+        colorInput.classList.add('note-color');
+        colorInput.setAttribute('type', 'color');
+        colorInput.onchange = (e) => {
+            if (this.wrapNode && e.target) this.wrapNode.style.backgroundColor = e.target.value;
+        }
+        colorInput.value = color || DEFAULT_COLOR;
+        this.colorInputNode = colorInput;
+        return colorInput;
+    }
+
+    private createTextArea(value: string | undefined, textAreaStyles?: INoteStore["textAreaStyles"]) {
+        const textarea = document.createElement('textarea');
+        textarea.classList.add('note-text');
+        if (value) textarea.value = value;
+        if (textAreaStyles?.width && textAreaStyles.height) {
+            textarea.style.width = textAreaStyles.width;
+            textarea.style.height = textAreaStyles.height;
+        }
+        this.textAreaNode = textarea;
+        return textarea;
     }
 
     private removeBodyListener() {
@@ -123,6 +164,7 @@ export class Note {
         this.wrapNode = null;
         this.headerNode = null;
         this.textAreaNode = null;
+        this.colorInputNode = null;
     }
 
     public toObject() {
@@ -135,7 +177,9 @@ export class Note {
                 width: textAreaStyles?.width,
                 height: textAreaStyles?.height,
             },
-            value: this.textAreaNode?.value
+            color: this.colorInputNode?.value,
+            value: this.textAreaNode?.value,
+            zIndex: this.wrapNode?.style.zIndex
         };
     }
 }

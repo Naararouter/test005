@@ -1,13 +1,22 @@
-import { STORAGE_KEY } from "./consts.js";
 import { INoteParams, INoteStore, Note } from "./Note.js";
+import { callMockApi } from "./MockApi.js";
 
 class NoteStore {
     private dragId = '';
     private isTrashOver = false;
     private items: Record<string, Note> = {};
+    private _frontCounter = 0;
 
     get isDragging() {
         return Boolean(this.dragId);
+    }
+
+    get frontCounter() {
+        return this._frontCounter;
+    }
+
+    public incFrontCounter() {
+        this._frontCounter++;
     }
 
     public createNote(params: INoteParams) {
@@ -44,24 +53,29 @@ class NoteStore {
         }
     }
 
-    public save = () => {
-        const resultState = [];
+    public save = async () => {
+        const items = [];
         for (let key in this.items) {
-            resultState.push(this.items[key].toObject());
+            items.push(this.items[key].toObject());
         }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(resultState));
+
+        await callMockApi('set', JSON.stringify({
+            items,
+            frontCounter: this._frontCounter
+        }))
     }
 
-    public load = () => {
-        const data = localStorage.getItem(STORAGE_KEY);
+    public load = async () => {
+        const data = await callMockApi('get');
         if (!data) return;
 
         this.clear();
         try {
             const parsedData = JSON.parse(data);
-            parsedData.forEach((dataNote: INoteStore) => {
+            parsedData.items.forEach((dataNote: INoteStore) => {
                 this.createNote(dataNote);
             })
+            this._frontCounter = parsedData.frontCounter;
         } catch (e) {
             window.console.error('NoteStore error: unexpected json parse error');
         }
