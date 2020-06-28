@@ -1,0 +1,94 @@
+:root {
+    --trash-zone-height: 200px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    background-color: #ececec;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#root {
+    flex-grow: 1;
+    cursor: copy;
+}
+
+#toolbar {
+    position: fixed;
+    padding: 10px;
+    right: 0;
+}
+
+#toolbar button {
+    background-color: #5dbcff;
+    color: #fff;
+    padding: 5px 10px;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-right: 20px;
+    transition: background-color 100ms linear;
+}
+
+#toolbar button:hover {
+    background-color: #3aaeff;
+}
+
+#toolbar button:active {
+    background-color: #25a6ff;
+}
+
+#trash {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.2);
+    font-family: sans-serif;
+    font-weight: bold;
+    border: 5px dashed rgba(0, 0, 0, 0.2);
+    height: var(--trash-zone-height);
+    transition: all 100ms linear;
+}
+
+#trash.drag-over {
+    background-color: rgba(0,0,0, 0.2);
+}
+
+.note {
+    position: absolute;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.16);
+    will-change: transform;
+}
+
+.note-header {
+    min-height: 30px;
+    background-color: rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
+.note-text {
+    height: 50px;
+    width: 200px;
+    background-color: #0000;
+    border: none;
+    padding: 5px;
+}
+
+.note-text:focus {
+    outline: none;
+}
