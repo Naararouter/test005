@@ -33,6 +33,9 @@ Spent time: 4h;
     * `trashZoneActivate` function, it doesn't have own class because it's pretty simple and small;
 * We should use `Store` for managing of our application state, not `Note` class directly.
 * I have tried to make a code is speaking for itself, but sometimes you'll find a some, maybe, important comments;
+* Also, I've used a some unobvious techniques for goal achievment (as simple as I can, and there weren't restrictions in requirements about this) such as: 
+    * resizing via textarea native resize
+    * static trash zone (otherwise, we should make a lot of overhead logic to know element interesection and etc., and there was a cause because of that I made a `mouse-event driven D&D` instead of using of `HTML5 D&D API`
 
 ### **How to run**
 Make sure you are in project folder via command line, and run the next commands:
