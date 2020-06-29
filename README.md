@@ -20,7 +20,7 @@ Additional time, for completing all tasks: +2h;
  3. ✅	&nbsp;Move a note by dragging.
  4. ✅	&nbsp;Remove a note by dragging it over a predefined "trash" zone.
  
- Bonuses (4/5): 
+ Bonuses (5/5): 
  1. ✅	&nbsp;Entering/editing note text. 
  2. ✅&nbsp;⏱	&nbsp;Moving notes to front (in case of overlapping notes). 
  3. ✅	&nbsp;Saving notes to local storage (restoring them on page load). 
