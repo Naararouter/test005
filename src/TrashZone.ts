@@ -2,12 +2,16 @@ import { throttle } from "./tools/throttle.js";
 import { store } from "./Store.js";
 import { MS_FPS_60 } from "./consts.js";
 
-export function trashZoneActivate() {
-    let trashZoneHeight = Number(
+export function getPixelSizeFromCssVar(name: string) {
+    return Number(
         getComputedStyle(document.documentElement)
-            .getPropertyValue('--trash-zone-height')
+            .getPropertyValue(`--${name}`)
             .slice(0, -2)
     );
+}
+
+export function trashZoneActivate() {
+    let trashZoneHeight = getPixelSizeFromCssVar('trash-zone-height')
 
     const trashZone = document.getElementById('trash')!;
     const trashZoneClasses = trashZone.classList;

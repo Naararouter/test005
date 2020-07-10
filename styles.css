@@ -1,5 +1,8 @@
 :root {
     --trash-zone-height: 200px;
+    --note-header-height: 30px;
+    --note-text-padding-size: 5px;
+    --overlay-color: rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -53,16 +56,16 @@ body {
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.2);
+    color: var(--overlay-color);
     font-family: sans-serif;
     font-weight: bold;
-    border: 5px dashed rgba(0, 0, 0, 0.2);
+    border: 5px dashed var(--overlay-color);
     height: var(--trash-zone-height);
     transition: all 100ms linear;
 }
 
 #trash.drag-over {
-    background-color: rgba(0,0,0, 0.2);
+    background-color: var(--overlay-color);
 }
 
 .note {
@@ -72,13 +75,13 @@ body {
     flex-direction: column;
     border-radius: 5px;
     overflow: hidden;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.16);
+    box-shadow: 0 4px 8px 0 var(--overlay-color);
     will-change: transform;
 }
 
 .note-header {
-    min-height: 30px;
-    background-color: rgba(0,0,0,0.2);
+    min-height: var(--note-header-height);
+    background-color: var(--overlay-color);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -97,7 +100,7 @@ body {
     width: 200px;
     background-color: #0000;
     border: none;
-    padding: 5px;
+    padding: var(--note-text-padding-size);
 }
 
 .note-color {
@@ -113,6 +116,13 @@ body {
 
 .note-text:focus {
     outline: none;
+}
+
+.note-preview {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    background-color: var(--overlay-color);
 }
 
 #loader {

@@ -73,7 +73,7 @@ class NoteStore {
         try {
             const parsedData = JSON.parse(data);
             parsedData.items.forEach((dataNote: INoteStore) => {
-                this.createNote(dataNote);
+                this.createNote({ ...dataNote, isFromStore: true });
             })
             this._frontCounter = parsedData.frontCounter;
         } catch (e) {

@@ -10,7 +10,7 @@ export function callMockApi(method: 'set' | 'get', data?: string) {
             } else {
                 resolve(localStorage.getItem(`${STORAGE_KEY}_ASYNC`));
             }
-        }, Math.random() * 10000)
+        }, Math.random() * 1000)
     })
         .then(result => {
             LOADER_NODE.classList.remove(ENABLE_CLASS);

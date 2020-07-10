@@ -2,6 +2,10 @@ import { ROOT_NODE, MS_FPS_60, DEFAULT_COLOR } from "./consts.js";
 import { throttle } from "./tools/throttle.js";
 import { store } from "./Store.js";
 import { bringToFrontIconLayout } from "./icons/bringToFront.js";
+import { getPixelSizeFromCssVar } from "./TrashZone.js";
+
+const HEADER_HEIGHT = getPixelSizeFromCssVar('note-header-height');
+const PADDING_SIZE = getPixelSizeFromCssVar('note-text-padding-size');
 
 export interface INoteStore {
     id: string;
@@ -17,6 +21,7 @@ export interface INoteStore {
 export interface INoteParamsBase extends INoteStore {
     x: number;
     y: number;
+    isFromStore: boolean;
 }
 
 export type INoteParams = Partial<INoteParamsBase>;
@@ -28,26 +33,71 @@ export class Note {
     private offsetMouseX = 0;
     private offsetMouseY = 0;
 
+    private previewNode: HTMLDivElement | null = null;
     private wrapNode: HTMLSpanElement | null = null;
     private headerNode: HTMLDivElement | null = null;
     private textAreaNode: HTMLTextAreaElement | null = null;
     private colorInputNode: HTMLInputElement | null = null;
 
-    private bodyListener: (() => void) | null = null;
+    private bodyListenerMove: ((e: MouseEvent) => void) | null = null;
+    private bodyListenerUp: ((e: MouseEvent) => void) | null = null;
 
     private readonly _id: string = '';
 
     constructor(params: INoteParams) {
-        const { x = 0, y = 0, id } = params;
+        const { x = 0, y = 0, id, isFromStore } = params;
         this._id = id || Math.random().toString().substring(2);
         this.lastX = x;
         this.lastY = y;
-        this.createNodes(params);
-        this.createHandlers();
+        if (isFromStore) {
+            this.createNodes(params);
+            this.createHandlers();
+        } else {
+            this.isDrag = true;
+            this.createPreviewNote();
+            this.createPreviewHandler();
+        }
     }
 
     get id() {
         return this._id;
+    }
+
+    private createPreviewHandler() {
+        this.bodyListenerUp = (e) => {
+            this.isDrag = false;
+            if (this.previewNode) ROOT_NODE.removeChild(this.previewNode);
+            this.previewNode = null;
+            this.createNodes({
+                x: this.lastX,
+                y: this.lastY,
+                textAreaStyles: {
+                    width: `${e.clientX - this.lastX - (PADDING_SIZE * 2)}px`,
+                    height: `${e.clientY - this.lastY - HEADER_HEIGHT - PADDING_SIZE}px`,
+                }
+            });
+            this.createHandlers();
+            if (this.bodyListenerUp) document.body.removeEventListener('mouseup', this.bodyListenerUp);
+            if (this.bodyListenerMove) document.body.removeEventListener('mouseup', this.bodyListenerMove);
+        };
+        this.bodyListenerMove = (e) => {
+            requestAnimationFrame(() => {
+                if (this.previewNode) {
+                    this.previewNode.style.width = `${e.clientX - this.lastX}px`;
+                    this.previewNode.style.height = `${e.clientY - this.lastY}px`;
+                }
+            })
+        }
+        document.body.addEventListener('mousemove', this.bodyListenerMove);
+        document.body.addEventListener('mouseup', this.bodyListenerUp);
+    }
+
+    private createPreviewNote() {
+        const notePreview = document.createElement('div');
+        notePreview.classList.add('note-preview');
+        notePreview.style.transform = `translate(${this.lastX}px, ${this.lastY}px)`;
+        this.previewNode = notePreview;
+        ROOT_NODE.appendChild(this.previewNode);
     }
 
     private createHandlers() {
@@ -57,6 +107,12 @@ export class Note {
             }
             this.headerNode.onmousedown = (e) => {
                 store.enableDragging(this.id);
+
+                if (this.wrapNode) {
+                    store.incFrontCounter();
+                    this.wrapNode.style.zIndex = `${store.frontCounter}`;
+                }
+
                 this.isDrag = true;
                 this.offsetMouseX = e.clientX - this.lastX;
                 this.offsetMouseY = e.clientY - this.lastY;
@@ -69,7 +125,8 @@ export class Note {
                 store.disableDragging();
                 this.isDrag = false;
             }
-            this.bodyListener = throttle((e: MouseEvent) => {
+
+            this.bodyListenerMove = throttle((e: MouseEvent) => {
                 if (!this.isDrag) return;
 
                 if (this.wrapNode) {
@@ -79,7 +136,7 @@ export class Note {
                 }
             }, MS_FPS_60, true);
 
-            document.body.addEventListener('mousemove', this.bodyListener);
+            document.body.addEventListener('mousemove', this.bodyListenerMove);
         } else {
             throw Error('Note constructor: unexpected error');
         }
@@ -153,8 +210,8 @@ export class Note {
     }
 
     private removeBodyListener() {
-        if (this.bodyListener) {
-            document.body.removeEventListener('mousemove', this.bodyListener);
+        if (this.bodyListenerMove) {
+            document.body.removeEventListener('mousemove', this.bodyListenerMove);
         }
     }
 
